@@ -3,22 +3,31 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}FakeLover{% endblock %}</title>
     {% load static %}
-    <title>{% block title %}My Django React App{% endblock %}</title>
-    
-    <script src="https://unpkg.com/react@17/umd/react.development.js"></script>
-    <script src="https://unpkg.com/react-dom@17/umd/react-dom.development.js"></script>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
 
-    {% block extra_head %}{% endblock %}
+    <!-- Nhúng React -->
+    <!-- Thêm Babel để biên dịch JSX -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
+    
 </head>
 <body>
-    <div id="root">
+    <nav>
+        <ul style="display: flex;justify-content: space-between;">
+            <li><a href="{% url 'home:home-page' %}">Trang chủ</a></li>
+            <li><a href="{% url 'home:chatbots-page' %}">Chatbot</a></li>
+            <li><a href="{% url 'home:login-page' %}">Log in</a></li>
+            <li><a href="{% url 'home:logout' %}">Log out</a></li>
+        </ul>
+    </nav>
+
+    <div class="container">
         {% block content %}{% endblock %}
     </div>
-
-    <!-- Nhúng file JavaScript React -->
-    <script src="{% static 'js/main.js' %}"></script>
-
-    {% block extra_js %}{% endblock %}
 </body>
 </html>

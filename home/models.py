@@ -33,3 +33,31 @@ class UserProfile(models.Model):
     def __str__(self):
         return self.user.username
 
+# 4. Đăng ký sử dụng chatbot
+class Subscription(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    chatbot = models.ForeignKey(ChatBotType, on_delete=models.CASCADE)
+    start_date = models.DateTimeField(auto_now_add=True)
+    end_date = models.DateTimeField()
+    is_active = models.BooleanField(default=True)
+
+    def __str__(self):
+        return f"{self.user.username} - {self.chatbot.name} ({'Active' if self.is_active else 'Expired'})"
+
+# 7. Cấu hình chatbot (cho phép AI thay đổi nội dung tin nhắn)
+class BotSettings(models.Model):
+    chatbot = models.OneToOneField(ChatBotType, on_delete=models.CASCADE)
+    response_speed = models.FloatField(default=1.0)  # Tốc độ phản hồi (s)
+    personality = models.CharField(max_length=50, choices=[("friendly", "Thân thiện"), ("romantic", "Lãng mạn"), ("serious", "Nghiêm túc")], default="friendly")
+    joke_frequency = models.IntegerField(default=3, help_text="Sau bao nhiêu tin nhắn sẽ chèn 1 câu đùa?")
+
+    def __str__(self):
+        return f"Cài đặt của {self.chatbot.name}"
+
+class SocialMediaAccount(models.Model):
+    chat_app = models.ForeignKey(ChatApp,on_delete=models.CASCADE)
+    username = models.CharField(max_length=100)
+    app_pass = models.CharField(max_length=100)
+    is_activate = models.BooleanField(default=False)
+    def __str__(self):
+        return f"{self.username}-{self.chat_app.name}"

@@ -1,0 +1,9 @@
+{% extends 'home/base.html' %}
+{% load static %}
+{% block title %}Chatbots - FakeLover{% endblock %}
+
+{% block content %}
+    <link rel="stylesheet" href="{% static 'css/chatbots.css' %}">
+    <div id="root"></div>
+    <script type="text/babel" src="{% static 'js/chatbots.js' %}"></script>
+{% endblock %}
