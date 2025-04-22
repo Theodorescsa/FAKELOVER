@@ -1,42 +1,51 @@
-const { useState } = React;
-const { createRoot } = ReactDOM;
-const axios = window.axios; // Đảm bảo axios được tải trong base.html
+document.addEventListener("DOMContentLoaded", function () {
+    const loginForm = document.getElementById("login-form");
+    const errorMessage = document.getElementById("error-message");
 
-const Login = () => {
-    const [username, setUsername] = useState("");
-    const [password, setPassword] = useState("");
-    const [error, setError] = useState("");
+    loginForm.addEventListener("submit", function (e) {
+        e.preventDefault();
 
-    const handleLogin = async (event) => {
-        event.preventDefault();
-        setError("");
+        const username = document.getElementById("username").value;
+        const password = document.getElementById("password").value;
 
-        try {
-            const response = await axios.post("/api/login/", {
-                username: username,
-                password: password,
-            });
-            alert("Đăng nhập thành công!");
-            window.location.href = "/"; 
-        } catch (error) {
-            setError("Đăng nhập thất bại! Vui lòng kiểm tra lại thông tin.");
-            console.error("Login error:", error.response?.data || error.message);
+        fetch("login-page/", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRFToken": getCookie("csrftoken")
+            },
+            body: JSON.stringify({ username, password })
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error("Sai tài khoản hoặc mật khẩu");
+            }
+            return response.json();
+        })
+        .then(data => {
+            localStorage.setItem("access_token", data.access);
+            localStorage.setItem("refresh_token", data.refresh);
+            window.location.href = "/chatbots-page"; // hoặc URL chatbot bạn muốn
+        })
+        .catch(error => {
+            errorMessage.textContent = error.message;
+            errorMessage.style.display = "block";
+        });
+    });
+
+    // Hàm lấy CSRF token từ cookie
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== "") {
+            const cookies = document.cookie.split(";");
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + "=")) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
         }
-    };
-
-    return (
-        <div>
-            <h2>Đăng nhập</h2>
-            {error && <p style={{ color: "red" }}>{error}</p>}
-            <form onSubmit={handleLogin}>
-                <input type="text" placeholder="Username" value={username} onChange={(e) => setUsername(e.target.value)} />
-                <input type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} />
-                <button type="submit">Đăng nhập</button>
-            </form>
-        </div>
-    );
-};
-
-// React 18: Sử dụng createRoot
-const root = createRoot(document.getElementById("root"));
-root.render(<Login />);
+        return cookieValue;
+    }
+});

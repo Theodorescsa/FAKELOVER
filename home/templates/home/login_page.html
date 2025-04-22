@@ -1,10 +1,25 @@
 {% extends 'home/base.html' %}
 {% load static %}
-{% block title %}Home - FakeLover{% endblock %}
+{% block title %}Đăng nhập - FakeLover{% endblock %}
 
 {% block content %}
-    <h1>Chào mừng bạn đến với FakeLover</h1>
-    <p>Chọn một chatbot để bắt đầu trò chuyện.</p>
-    <div id="root"></div>
-    <script type="text/babel" src="{% static 'js/login.js' %}"></script>
+<h1>Chào mừng bạn đến với FakeLover</h1>
+<p>Chọn một chatbot để bắt đầu trò chuyện.</p>
+
+<div id="login-container">
+    <h2>Đăng nhập</h2>
+
+    {% if form.non_field_errors %}
+        <p id="error-message" style="color: red;">
+            {{ form.non_field_errors|first }}
+        </p>
+    {% endif %}
+
+    <form id="login-form" method="post">
+        {% csrf_token %}
+        {{ form.username }}
+        {{ form.password }}
+        <button type="submit">Đăng nhập</button>
+    </form>
+</div>
 {% endblock %}

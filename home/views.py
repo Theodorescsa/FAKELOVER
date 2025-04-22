@@ -9,39 +9,8 @@ from rest_framework.response import Response
 from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import authenticate, logout
-from django.http import JsonResponse
-from rest_framework.decorators import api_view
-
-# View đăng nhập để trả JWT trong cookies
-class CustomTokenObtainPairView(TokenObtainPairView):
-    @extend_schema(tags=["app_home"])
-    def post(self, request, *args, **kwargs):
-        response = super().post(request, *args, **kwargs)
-        access_token = response.data["access"]
-        refresh_token = response.data["refresh"]
-
-        # Đặt Access Token trong HTTP-Only Cookie
-        response.set_cookie(
-            key="access_token",
-            value=access_token,
-            httponly=False,
-            secure=True,  # Chỉ bật nếu chạy HTTPS
-            samesite="Lax",
-            path="/"
-        )
-
-        # Đặt Refresh Token trong Cookie
-        response.set_cookie(
-            key="refresh_token",
-            value=refresh_token,
-            httponly=False,
-            secure=True,
-            samesite="Lax",
-            path="/"
-        )
-
-        return response
-
+from django.contrib import messages
+from .forms import LoginForm
 # API Đăng xuất: Xóa cookie chứa token
 @extend_schema(tags=["app_home"])
 def logout_view(request):
@@ -49,15 +18,47 @@ def logout_view(request):
     return redirect("home:home-page")
 
 def login_page(request):
-    return render(request,"home/login_page.html")
-    
+    form = LoginForm()
+
+    if request.method == "POST":
+        form = LoginForm(request.POST)
+        if form.is_valid():
+            username = form.cleaned_data['username']
+            password = form.cleaned_data['password']
+            user = authenticate(username=username, password=password)
+
+            if user:
+                refresh = RefreshToken.for_user(user)
+                context = {
+                    'access_token': str(refresh.access_token),
+                    'refresh_token': str(refresh),
+                    'username': user.username
+                }
+                return render(request, "home/chatbot_page.html", context)
+            else:
+                form.add_error(None, "Sai tài khoản hoặc mật khẩu")
+
+    return render(request, "home/login_page.html", {'form': form})
 # Create your views here.
 def home_page(request):
     return render(request,'home/home_page.html')
 
 def chatbots_page(request):
-    return render(request,'home/chatbot_page.html')
+    
+    if request.user.is_authenticated:
+        refresh = RefreshToken.for_user(request.user)
+        context = {
+            'access_token': str(refresh.access_token),
+            'refresh_token': str(refresh),
+        }
+        print('context',context)
+    else:
+        context = {
+            'access_token': '',
+            'refresh_token': '',
+        }
 
+    return render(request, 'home/chatbot_page.html', context)
 @extend_schema(tags=["app_home"])
 class ChatBotTypeViewSet(viewsets.ModelViewSet):
     queryset = ChatBotType.objects.all()

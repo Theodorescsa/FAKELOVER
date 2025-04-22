@@ -16,7 +16,7 @@ urlpatterns = [
     path('', home_page, name='home-page'),
     path('login-page/', login_page, name='login-page'),
     path('chatbots-page', chatbots_page, name='chatbots-page'),
-    path("api/login/", CustomTokenObtainPairView.as_view(), name="token_obtain_pair"),
     path("api/logout/", logout_view, name="logout"),
+
 ]
 
